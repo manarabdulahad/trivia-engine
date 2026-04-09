@@ -1,0 +1,8 @@
+{
+  "short_name": "Trivia Engine",
+  "name": "Grand Master Trivia Engine",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1a1a2e",
+  "background_color": "#1a1a2e"
+}
