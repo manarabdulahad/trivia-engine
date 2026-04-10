@@ -1,7 +1,7 @@
 CSI 3150: Final Project - Trivia Quiz Game
 Name: Manar
 
-Live Site: [PASTE YOUR VERCEL LINK HERE]
+Live Site: https://trivia-engine-nu.vercel.app 
 
 Project Overview
 This is my final project for CSI 3150. I built a trivia game that uses an API to get questions. The goal was to make a game that is fun to play but also challenging because of a timer. I used React to build it and handled all the styling with regular CSS.
