@@ -1,5 +1,5 @@
 CSI 3150: Final Project - Trivia Quiz Game
-Name: Manar
+Name: Manar Abdulahad
 
 Live Site: https://trivia-engine-nu.vercel.app 
 
