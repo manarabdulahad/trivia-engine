@@ -131,4 +131,4 @@ function Quiz({ config, onEnd }) {
 }
 
 export default Quiz;
-export default Quiz;
+
