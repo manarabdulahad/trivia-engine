@@ -8,8 +8,8 @@ function Quiz({ config, onEnd }) {
   const [timeLeft, setTimeLeft] = useState(15);
   const [loading, setLoading] = useState(true);
   const [feedback, setFeedback] = useState(""); 
+  const [error, setError] = useState(null); 
 
-  // Fisher-Yates Shuffle 
   const shuffle = useCallback((array) => {
     let arr = [...array];
     for (let i = arr.length - 1; i > 0; i--) {
@@ -29,24 +29,34 @@ function Quiz({ config, onEnd }) {
     setShuffledAnswers(shuffle(allAnswers));
   }, [shuffle]);
 
-  // Fetching questions from Open Trivia DB
   useEffect(() => {
     const url = `https://opentdb.com/api.php?amount=10&category=${config.category}&difficulty=${config.difficulty}&type=multiple`;
+    
     fetch(url)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Network error');
+        return res.json();
+      })
       .then(data => {
-        if (data.results && data.results.length > 0) {
+        // response_code 0 is the ONLY success code for this API
+        if (data.response_code === 0 && data.results.length > 0) {
           setQuestions(data.results);
           prepareAnswers(data.results[0]);
           setLoading(false);
+        } else {
+          // This handles cases where the category is empty
+          setError("Trivia content currently unavailable, please try again later.");
+          setLoading(false);
         }
       })
-      .catch(() => alert("API error, check connection."));
+      .catch(() => {
+        setError("Trivia content currently unavailable, please try again later.");
+        setLoading(false);
+      });
   }, [config, prepareAnswers]);
 
-  // 15-second timer logic
   useEffect(() => {
-    if (loading || feedback) return;
+    if (loading || error || feedback) return;
 
     if (timeLeft === 0) {
       handleNext(false); 
@@ -58,7 +68,7 @@ function Quiz({ config, onEnd }) {
     }, 1000);
 
     return () => clearInterval(timer); 
-  }, [timeLeft, loading, feedback]);
+  }, [timeLeft, loading, error, feedback]);
 
   const handleNext = (isCorrect) => {
     const feedbackClass = isCorrect ? "flash-correct" : "shake-wrong";
@@ -66,14 +76,11 @@ function Quiz({ config, onEnd }) {
     
     if (isCorrect) {
       setScore(prev => prev + 10);
-      
-      
       const ding = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
       ding.volume = 0.5;
-      ding.play().catch(e => console.log("Sound blocked"));
+      ding.play().catch(() => console.log("Sound blocked"));
     }
 
-    // the shake/flash animation to show that the answer is either right/wrong
     setTimeout(() => {
       setFeedback("");
       const nextIndex = currentIndex + 1;
@@ -86,6 +93,16 @@ function Quiz({ config, onEnd }) {
       }
     }, 600);
   };
+
+  // If there's an error, show the message and a way back
+  if (error) {
+    return (
+      <div className="quiz-box">
+        <h2 style={{ color: '#f44336' }}>{error}</h2>
+        <button className="start-btn" onClick={() => window.location.reload()}>Go Back</button>
+      </div>
+    );
+  }
 
   if (loading) return <div className="quiz-box"><h2>Loading...</h2></div>;
 
@@ -113,4 +130,5 @@ function Quiz({ config, onEnd }) {
   );
 }
 
+export default Quiz;
 export default Quiz;
