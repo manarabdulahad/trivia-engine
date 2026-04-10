@@ -38,13 +38,11 @@ function Quiz({ config, onEnd }) {
         return res.json();
       })
       .then(data => {
-        // response_code 0 is the ONLY success code for this API
         if (data.response_code === 0 && data.results.length > 0) {
           setQuestions(data.results);
           prepareAnswers(data.results[0]);
           setLoading(false);
         } else {
-          // This handles cases where the category is empty
           setError("Trivia content currently unavailable, please try again later.");
           setLoading(false);
         }
@@ -55,22 +53,8 @@ function Quiz({ config, onEnd }) {
       });
   }, [config, prepareAnswers]);
 
-  useEffect(() => {
-    if (loading || error || feedback) return;
-
-    if (timeLeft === 0) {
-      handleNext(false); 
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer); 
-  }, [timeLeft, loading, error, feedback]);
-
-  const handleNext = (isCorrect) => {
+  // handleNext wrapped in useCallback to fix Vercel/ESLint dependency errors
+  const handleNext = useCallback((isCorrect) => {
     const feedbackClass = isCorrect ? "flash-correct" : "shake-wrong";
     setFeedback(feedbackClass);
     
@@ -92,9 +76,23 @@ function Quiz({ config, onEnd }) {
         onEnd(score + (isCorrect ? 10 : 0));
       }
     }, 600);
-  };
+  }, [currentIndex, questions, score, onEnd, prepareAnswers]);
 
-  // If there's an error, show the message and a way back
+  useEffect(() => {
+    if (loading || error || feedback) return;
+
+    if (timeLeft === 0) {
+      handleNext(false); 
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer); 
+  }, [timeLeft, loading, error, feedback, handleNext]); 
+
   if (error) {
     return (
       <div className="quiz-box">
@@ -131,4 +129,3 @@ function Quiz({ config, onEnd }) {
 }
 
 export default Quiz;
-
